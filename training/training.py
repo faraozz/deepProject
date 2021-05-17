@@ -1,5 +1,7 @@
 import numpy as np
 import torch
+from NetworkInNetwork import NiN
+import copy
 
 
 #loss function?
@@ -30,6 +32,8 @@ def trainmodel(trainingdata, validationdata, model, optimizer, criterion, num_ep
                 data = validationdata
 
             for databatch, labelbatch in data:
+
+
                 #batchsize
                 #set gradients to zero
                 optimizer.zero_grad()
@@ -41,7 +45,7 @@ def trainmodel(trainingdata, validationdata, model, optimizer, criterion, num_ep
                 #outputs and predictions + calculates loss
                 outputs = model(databatch)
                 _, preds = torch.max(outputs, 1)
-                loss = criterion(labels, preds)
+                loss = criterion(databatch, labelbatch)
 
                 #backward + optimizer only if in training
                 if phase == 'train':
@@ -75,8 +79,8 @@ def trainmodel(trainingdata, validationdata, model, optimizer, criterion, num_ep
     return model
 
 model = NiN()
-optimizer = torch.optim.SGD(network.parameters(), lr=0.001)
-criterion = torch.nn.MSELoss()
+optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
+criterion = torch.nn.CrossEntropyLoss()
 
 
 trainmodel(trainingdata, validationdata, model, optimizer, criterion, 10)
