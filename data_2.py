@@ -17,7 +17,26 @@ import numpy as np
 
 _IMAGENET_DATASET_DIR = "./tiny-imagenet-200"
 
-
+#Turn image function
+def rotate_img(img, angle):
+    #For imageNet
+    mean_pix = [0.485, 0.456, 0.406]
+    std_pix = [0.229, 0.224, 0.225]
+    transform = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize(mean=mean_pix, std=std_pix)
+            ])
+    if angle == 0: # 0 degrees rotation
+        print("done")
+        return transform(img)
+    elif angle == 1: # 90 degrees rotation
+        return transform(np.flipud(np.transpose(img, (1,0,2))).copy())
+    elif angle == 2: # 180 degrees rotation
+        return transform(np.fliplr(np.flipud(img)).copy())
+    elif angle == 3: # 270 degrees rotation
+        return transform(np.transpose(np.flipud(img), (1,0,2)).copy())
+    else:
+        raise ValueError('rotation should be 0, 90, 180, or 270 degrees')
 
 train_data_dir = _IMAGENET_DATASET_DIR + '/' + 'train'
 val_data_dir = _IMAGENET_DATASET_DIR + '/' + 'val'
@@ -31,31 +50,20 @@ dataset_origin = ImageFolder(train_data_dir, transform)
 val_dataset_origin = ImageFolder(val_data_dir, transform)
 test_dataset_origin = ImageFolder(test_data_dir, transform)
 
+#train_dataloader = torch.utils.data.DataLoader(dataset_origin, batch_size=6, shuffle = True)
 
-#Turn images
-def rotate_img(img, angle):
-    if angle == 0: # 0 degrees rotation
-        return img
-    elif angle == 90: # 90 degrees rotation
-        return np.flipud(np.transpose(img, (1,0,2))).copy()
-    elif angle == 180: # 180 degrees rotation
-        return np.fliplr(np.flipud(img)).copy()
-    elif angle == 270: # 270 degrees rotation
-        return np.transpose(np.flipud(img), (1,0,2)).copy()
-    else:
-        raise ValueError('rotation should be 0, 90, 180, or 270 degrees')
-
-#For imageNet
-mean_pix = [0.485, 0.456, 0.406]
-std_pix = [0.229, 0.224, 0.225]
-transform = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(mean=mean_pix, std=std_pix)
-        ])
+for X,y in dataset_origin:
+    rotated_img_batch = []
+    for i in range(6):
+        img0 = X
+        rotated_img_batch.append(rotate_img(img0, 0))
+    rotated_imgs = torch.stack(rotated_img_batch, dim=0)
 
 
-#train
-img, _=dataset_origin[0]
+
+
+
+
 rotated_imgs = [transform(img),transform(rotate_img(img,  90)),transform(rotate_img(img, 180)),transform(rotate_img(img, 270))]
 rotation_labels = torch.LongTensor([0, 1, 2, 3])
 rotated_imgs = torch.stack(rotated_imgs, dim=0)
