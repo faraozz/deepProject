@@ -7,6 +7,7 @@ import torch
 import pickle
 import numpy as np
 import torchvision.transforms as transforms
+from matplotlib import image
 
 class Dataset(torch.utils.data.Dataset):
     def __init__(self, datapath):
@@ -38,14 +39,21 @@ class Dataset(torch.utils.data.Dataset):
         impath = self.im_paths[index]
 
         # load data and get label
-        X = torch.load(impath)
-        y = torch.nn.functional.one_hot(self.label2id[self.labels[index]], self.n_labels)  # create one-hot encoding
-        #y = self.labels[index]
+        X = image.imread(impath).transpose()
+        X = torch.from_numpy(X.astype(np.float64))
+        class_id = self.label2id[self.labels[index]]
+        class_id = torch.from_numpy(np.asarray([class_id]))
+        y = class_id
 
         return X, y
 
 class RotDataset(torch.utils.data.Dataset):
-    def __init__(self, im_paths):
+    def __init__(self, datapath):
+        with open(datapath, "rb") as f:
+            data = pickle.load(f)
+
+        im_paths, _, _ = data
+
         self.im_paths = im_paths
 
     def __len__(self):
@@ -69,10 +77,9 @@ class RotDataset(torch.utils.data.Dataset):
         impath = self.im_paths[index]
 
         # load data and get label
-        X = torch.load(impath)
+        X = image.imread(impath)
         X = self.rotate_img(X, rot)
-        y = rot
-        #y = torch.nn.functional.one_hot(rot, 4)  # create one-hot encoding
+        y = torch.from_numpy(np.asarray([rot]))
 
         return X, y
 
