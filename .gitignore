@@ -121,3 +121,4 @@ dmypy.json
 
 #project specific
 data
+models/checkpoints/*
