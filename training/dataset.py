@@ -4,13 +4,22 @@ With some help from: https://stanford.edu/~shervine/blog/pytorch-how-to-generate
 """
 
 import torch
+import pickle
 import numpy as np
 import torchvision.transforms as transforms
 
 class Dataset(torch.utils.data.Dataset):
-    def __init__(self, im_paths, labels):
+    def __init__(self, datapath):
+        with open(datapath, "rb") as f:
+            data = pickle.load(f)
+
+        im_paths, labels, label2id = data
+        n_labels = len(label2id.keys())
+
         self.labels = labels
         self.im_paths = im_paths
+        self.label2id = label2id
+        self.n_labels = n_labels
 
     def __len__(self):
         """
@@ -30,7 +39,8 @@ class Dataset(torch.utils.data.Dataset):
 
         # load data and get label
         X = torch.load(impath)
-        y = self.labels[index]
+        y = torch.nn.functional.one_hot(self.label2id[self.labels[index]], self.n_labels)  # create one-hot encoding
+        #y = self.labels[index]
 
         return X, y
 
@@ -50,7 +60,7 @@ class RotDataset(torch.utils.data.Dataset):
         Generate one sample of data
         :param index:
         :param rot: optional, index of which rotation to use (out of {0, 1, 2, 3})
-        :return:
+        :return: X, y. Note that the CrossEntropy function expects the target value to be a class index
         """
         if rot is None:
             rot = np.random.randint(0, 4)
@@ -62,6 +72,7 @@ class RotDataset(torch.utils.data.Dataset):
         X = torch.load(impath)
         X = self.rotate_img(X, rot)
         y = rot
+        #y = torch.nn.functional.one_hot(rot, 4)  # create one-hot encoding
 
         return X, y
 

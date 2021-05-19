@@ -5,7 +5,6 @@ With some help from: https://stanford.edu/~shervine/blog/pytorch-how-to-generate
 
 import numpy as np
 import torch
-from os import listdir
 from os.path import join
 from training.dataset import Dataset
 from models.NetworkInNetwork import NiN
@@ -31,17 +30,11 @@ criterion = torch.nn.CrossEntropyLoss()
 trainpath = "../data/traindata.npz"
 valpath = "../data/valdata.npz"
 
-traindata = np.load(trainpath)
-valdata = np.load(valpath)
-
-trainX_paths, trainY_labels = traindata['X_paths'], traindata['Y_ints']
-valX_paths, valY_labels = valdata['X_paths'], valdata['Y_ints']
-
 # Generators
-training_set = Dataset(trainX_paths, trainY_labels)
+training_set = Dataset(trainpath)
 training_generator = torch.utils.data.Dataloader(training_set, **params)
 
-validation_set = Dataset(valX_paths, valY_labels)
+validation_set = Dataset(valpath)
 validation_generator = torch.utils.data.Dataloader(validation_set, **params)
 
 # loop over epochs

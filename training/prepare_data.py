@@ -3,6 +3,7 @@ Load tiny imagenet 200 images and convert them into a single numpy array
 """
 
 import numpy as np
+import pickle
 from os import listdir
 from os.path import join
 
@@ -22,8 +23,10 @@ n_classims = 500  # 500 images per class
 #
 X_train_paths = []
 Y_train_labs = []
-for classpath in trainclasspaths:
+label2id = {}
+for i, classpath in enumerate(trainclasspaths):
     ims = listdir(join(trainpath, classpath, "images"))
+    label2id[int(classpath[1:])] = i
     for im in ims:
         X_train_paths.append(join(trainpath, classpath, "images", im))
         Y_train_labs.append(classpath)
@@ -53,6 +56,12 @@ val_paths = np.asarray(val_paths)
 # save data
 #
 
-np.savez(join(savepath, "traindata.npz"), X_paths=X_train_paths, Y_ints=Y_train_ints)
-np.savez(join(savepath, "valdata.npz"), X_paths=val_paths, Y_ints=val_ints)
+#np.savez(join(savepath, "traindata.npz"), X_paths=X_train_paths, Y_ints=Y_train_ints)
+#np.savez(join(savepath, "valdata.npz"), X_paths=val_paths, Y_ints=val_ints)
+
+with open(join(savepath, "traindata.pkl"), "wb") as f:
+    pickle.dump([X_train_paths, Y_train_ints, label2id], f)
+
+with open(join(savepath, "valdata.pkl"), "wb") as f:
+    pickle.dump([val_paths, val_ints, label2id], f)
 
