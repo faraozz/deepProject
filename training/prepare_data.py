@@ -3,7 +3,6 @@ Load tiny imagenet 200 images and convert them into a single numpy array
 """
 
 import numpy as np
-import pickle
 from os import listdir
 from os.path import join
 
@@ -53,13 +52,7 @@ val_paths = np.asarray(val_paths)
 #
 # save data
 #
-# with open("../data/traindata.txt", "wb") as f:
-#     pickle.dump([X_train_paths, Y_train_ints], f)
-#
 
 np.savez(join(savepath, "traindata.npz"), X_paths=X_train_paths, Y_ints=Y_train_ints)
 np.savez(join(savepath, "valdata.npz"), X_paths=val_paths, Y_ints=val_ints)
-
-# with open("../data/testdata.txt", "rb") as f:
-#     X_paths, Y_ints = pickle.load(f)
 

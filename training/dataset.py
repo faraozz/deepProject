@@ -3,10 +3,7 @@ tiny imagenet has 200 classes and 500 images per class
 With some help from: https://stanford.edu/~shervine/blog/pytorch-how-to-generate-data-parallel
 """
 
-import numpy as np
 import torch
-from os import listdir
-from os.path import join
 
 class Dataset(torch.utils.data.Dataset):
     def __init__(self, im_paths, labels):
