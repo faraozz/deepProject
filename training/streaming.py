@@ -7,31 +7,49 @@ import numpy as np
 import torch
 from os import listdir
 from os.path import join
+from training.dataset import Dataset
 
-class Dataset(torch.utils.data.Dataset):
-    def __init__(self, im_paths, labels):
-        self.labels = labels
-        self.im_paths = im_paths
+# CUDA for torch
+use_cuda = False  # for now, avoid GPU stuff
+device = torch.device("cpu")
+torch.backends.cudnn.benchmark = True
 
-    def __len__(self):
-        """
-        The total number of samples
-        :return:
-        """
-        return len(self.im_paths)
+# parameters
+max_epochs = 10
+params = {
+    'batch_size': 64,
+    'shuffle': False,  # already shuffled
+    'num_workers': 2
+}
 
-    def __getitem__(self, index):
-        """
-        Generate one sample of data
-        :param index:
-        :return:
-        """
-        # select sample
-        impath = self.im_paths[index]
+# Datasets
+trainpath = "../data/traindata.npz"
+valpath = "../data/valdata.npz"
 
-        # load data and get label
-        X = torch.load(impath)
-        y = self.labels[index]
+traindata = np.load(trainpath)
+valdata = np.load(valpath)
 
-        return X, y
+trainX_paths, trainY_labels = traindata['X_paths'], traindata['Y_ints']
+valX_paths, valY_labels = valdata['X_paths'], valdata['Y_ints']
+
+# Generators
+training_set = Dataset(trainX_paths, trainY_labels)
+training_generator = torch.utils.data.Dataloader(training_set, **params)
+
+validation_set = Dataset(valX_paths, valY_labels)
+validation_generator = torch.utils.data.Dataloader(validation_set, **params)
+
+# loop over epochs
+for epoch in range(max_epochs):
+    for local_batch, local_labels in training_generator:
+        local_batch, local_labels = local_batch.to(device), local_labels.to(device)
+
+        # Model computations
+
+    # Validation
+    with torch.set_grad_enabled(False):
+        for local_batch, local_labels in validation_generator:
+            local_batch, local_labels = local_batch.to(device), local_labels.to(device)
+
+            # Model computations
 

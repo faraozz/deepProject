@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-
+from models.NetworkInNetwork import NiN
 
 #loss function?
 #def loss(labels, preds):
