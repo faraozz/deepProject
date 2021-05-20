@@ -40,6 +40,8 @@ class Dataset(torch.utils.data.Dataset):
 
         # load data and get label
         X = image.imread(impath).transpose()
+        if len(X.shape) == 2:  # add extra channels in the case of monochrome images
+            X = np.stack([X, X, X], axis=0)
         X = torch.from_numpy(X.astype(np.float64))
         class_id = self.label2id[self.labels[index]]
         class_id = torch.from_numpy(np.asarray([class_id]))
@@ -78,6 +80,8 @@ class RotDataset(torch.utils.data.Dataset):
 
         # load data and get label
         X = image.imread(impath)
+        if len(X.shape) == 2:
+            X = np.stack([X, X, X], axis=2)  # axis 2 because NOT transposed yet
         X = self.rotate_img(X, rot)
         y = torch.from_numpy(np.asarray([rot]))
 
