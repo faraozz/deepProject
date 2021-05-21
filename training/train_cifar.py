@@ -5,6 +5,7 @@ import torchvision
 import torchvision.transforms as transforms
 import torch.optim as optim
 import torch.nn as nn
+from os.path import join
 
 CIFAR_PATH = '../cifar-10-batches-py'
 transform = transforms.Compose([
@@ -82,3 +83,7 @@ with torch.no_grad():
 
 print('Accuracy of the network on the 10000 test images: %d %%' % (
     100 * correct / total))
+
+# Save model
+model_name = "cifar10_6_0.001_0.9_10"
+torch.save(AlexNet_model.state_dict(), join("../models/checkpoints/", model_name))
