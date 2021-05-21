@@ -83,7 +83,10 @@ class RotDataset(torch.utils.data.Dataset):
         if len(X.shape) == 2:
             X = np.stack([X, X, X], axis=2)  # axis 2 because NOT transposed yet
         X = self.rotate_img(X, rot)
+        #ylab = [0 0 0 0]
+        #ylab(rot)
         y = torch.from_numpy(np.asarray([rot]))
+
 
         return X, y
 
@@ -96,7 +99,7 @@ class RotDataset(torch.utils.data.Dataset):
             transforms.Normalize(mean=mean_pix, std=std_pix)
         ])
         if angle == 0:  # 0 degrees rotation
-            return transform(img)
+            return transform(np.array(img))
         elif angle == 1:  # 90 degrees rotation
             return transform(np.flipud(np.transpose(img, (1, 0, 2))).copy())
         elif angle == 2:  # 180 degrees rotation
