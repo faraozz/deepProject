@@ -6,7 +6,7 @@ import torchvision.transforms as transforms
 import torch.optim as optim
 import torch.nn as nn
 from os.path import join
-from training.transfer_learning import freeze_last_layers
+from training.transfer_learning import freeze_last_layers, load_model
 
 MNIST_PATH = '../mnist'
 
@@ -36,16 +36,9 @@ test_data = torchvision.datasets.MNIST(root=MNIST_PATH, train=False, download=Tr
 testloader = torch.utils.data.DataLoader(test_data, batch_size=6, shuffle=False, num_workers=0)
 
 #Now using the AlexNet
-AlexNet_model = torch.hub.load('pytorch/vision:v0.6.0', 'alexnet', pretrained=False)
-
-AlexNet_model.features[0] = nn.Conv2d(1, 64, kernel_size=(11,11), stride = 1, padding=2)
-
-#Updating the second classifier
-AlexNet_model.classifier[4] = nn.Linear(4096,1024)
-
-#Updating the third and the last classifier that is the output layer of the network. Make sure to have 10 output nodes if we are going to get 10 class labels through our model.
-AlexNet_model.classifier[6] = nn.Linear(1024,10)
-
+modelpath = "../models/checkpoints"
+loaded_model_classes = 4  # 200 for imagenet, 4 for rotated imagenet
+AlexNet_model = load_model("alexnet", modelpath, loaded_model_classes, 10)
 AlexNet_model = freeze_last_layers(AlexNet_model)
 
 #Instantiating CUDA device
