@@ -6,6 +6,7 @@ import torchvision.transforms as transforms
 import torch.optim as optim
 import torch.nn as nn
 from os.path import join
+from training.transfer_learning import freeze_last_layers
 
 MNIST_PATH = '../mnist'
 
@@ -44,6 +45,8 @@ AlexNet_model.classifier[4] = nn.Linear(4096,1024)
 
 #Updating the third and the last classifier that is the output layer of the network. Make sure to have 10 output nodes if we are going to get 10 class labels through our model.
 AlexNet_model.classifier[6] = nn.Linear(1024,10)
+
+AlexNet_model = freeze_last_layers(AlexNet_model)
 
 #Instantiating CUDA device
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
