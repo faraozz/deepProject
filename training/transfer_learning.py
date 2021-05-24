@@ -32,10 +32,11 @@ def load_model(modeltype, modelpath, trained_model_classes, new_model_classes=No
     """
     if modeltype == "alexnet":
         model = torch.hub.load('pytorch/vision:v0.6.0', 'alexnet', pretrained=False)
-        model.features[0] = nn.Conv2d(1, 64, kernel_size=(11, 11), stride=1, padding=2)
+        #model.features[0] = nn.Conv2d(1, 64, kernel_size=(11, 11), stride=1, padding=2)
         model.classifier[4] = nn.Linear(4096, 1024)
         model.classifier[6] = nn.Linear(1024, trained_model_classes)
-        model.load_state_dict(torch.load(modelpath))
+        checkpoint = torch.load(modelpath)
+        model.load_state_dict(checkpoint['model_state_dict'])
         if new_model_classes is not None:  # if a different number of model classes, replace the last layer entirely
             model.classifier[6] = nn.Linear(1024, new_model_classes)
     elif modeltype == "nin":
@@ -62,9 +63,9 @@ def freeze_last_layers(model, n_free=1):
         param.requires_grad = False
 
     num_layers = len(model.features)
-    for l in range(num_layers - n_free, num_layers):
-        for param in model.features[l].parameters():
-            param.requires_grad = True
+    for i, param in enumerate(model.parameters()):
+      if i >= num_layers - n_free:
+        param.requires_grad = True
 
     return model
 
