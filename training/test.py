@@ -17,6 +17,7 @@ import pickle
 from os import listdir
 from torchvision.io import read_image
 from matplotlib import image
+from dataset import Dataset
 
 # Function to rotate a given image
 def rotate_img(img, angle):
@@ -66,62 +67,62 @@ class CustomImageDataset(Dataset):
         return sample
 
 
+if __name__ == '__main__':
+        # Prepare test data
 
-# Prepare test data
+        np.random.seed(1)
 
-np.random.seed(1)
-
-# Change datapath to be correct  ###########################################################################################
-datapath = "../tiny-imagenet-200/"
-testpath = join(datapath, "test/images/")
-
-
-
-# Change path to model to be correct #######################################################################################
-MODEL_PATH="../models/test"
-
-# CUDA for torch
-use_cuda = True
-device = torch.device("cuda")
-torch.backends.cudnn.benchmark = False
-
-# Adapt parameters #########################################################################################################
-params = {
-    'batch_size': 6,
-    'shuffle': False,  # already shuffled
-    'num_workers': 0
-}
-NUMBER_OF_CLASSES = 4
-
-# Load model
-AlexNet_model = torch.hub.load('pytorch/vision:v0.6.0', 'alexnet', pretrained=True)
-AlexNet_model.classifier[4] = nn.Linear(4096,1024)
-AlexNet_model.classifier[6] = nn.Linear(1024,NUMBER_OF_CLASSES)
-AlexNet_model.load_state_dict(torch.load(MODEL_PATH))
-AlexNet_model.to(device)
+        # Change datapath to be correct  ###########################################################################################
+        datapath = "../tiny-imagenet-200/"
+        testpath = join(datapath, "test/images/")
 
 
-# Load test dataset
-test_dataset_origin = CustomImageDataset(testpath)
 
-test_dataloader = torch.utils.data.DataLoader(test_dataset_origin, **params)
+        # Change path to model to be correct #######################################################################################
+        MODEL_PATH="models/best models/regular_classification_batch_size128_epochs20_mom0.9_weightdec0.0005_lrt0.001_pretrainedFalse"
 
-test_size = len(test_dataloader)
+        # CUDA for torch
+        use_cuda = True
+        device = torch.device("cuda")
+        torch.backends.cudnn.benchmark = False
+
+        # Adapt parameters #########################################################################################################
+        params = {
+            'batch_size': 128,
+            'shuffle': False,  # already shuffled
+            'num_workers': 4
+        }
+        NUMBER_OF_CLASSES = 200
+
+        # Load model
+        AlexNet_model = torch.hub.load('pytorch/vision:v0.6.0', 'alexnet', pretrained=False)
+        AlexNet_model.classifier[4] = nn.Linear(4096,1024)
+        AlexNet_model.classifier[6] = nn.Linear(1024,NUMBER_OF_CLASSES)
+        AlexNet_model.load_state_dict(torch.load(MODEL_PATH)['model_state_dict'])
+        AlexNet_model.to(device)
 
 
-correct = 0
-total = 0
-with torch.no_grad():
-    for data in test_dataloader:
-        images, labels = data["image"].to(device,dtype=torch.float), data["label"].to(device, dtype=torch.int64)
-        outputs = AlexNet_model(images)
-        _, predicted = torch.max(outputs.data, 1)
-        
-        total += labels.size(0)
-        
-        correct += (predicted == labels).sum().item()
+        # Load test dataset
+        test_dataset_origin = Dataset(testpath)
 
-print('Accuracy of the network on the 10000 test images: %d %%' % (100 * correct / total))
+        test_dataloader = torch.utils.data.DataLoader(test_dataset_origin, **params)
+
+        test_size = len(test_dataloader)
+
+
+        correct = 0
+        total = 0
+        with torch.no_grad():
+            for data in test_dataloader:
+                images, labels = data["image"].to(device,dtype=torch.float), data["label"].to(device, dtype=torch.int64)
+                outputs = AlexNet_model(images)
+                _, predicted = torch.max(outputs.data, 1)
+                
+                total += labels.size(0)
+                
+                correct += (predicted == labels).sum().item()
+
+        print('Accuracy of the network on the 10000 test images: %d %%' % (100 * correct / total))
 
 
 
